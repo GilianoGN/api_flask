@@ -1,0 +1,45 @@
+Python / Cache
+
+pycache/
+*.py[cod]
+*$py.class
+
+Pytest / Cobertura de Testes
+
+.pytest_cache/
+.coverage
+htmlcov/
+.pytest_cache
+
+Banco de dados local (Flask SQLite)
+
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+Ambientes Virtuais
+
+.venv/
+venv/
+ENV/
+env/
+
+Variáveis de Ambiente e Configurações Sensíveis
+
+.env
+.env.local
+.env.*.local
+
+IDEs e Editores de Código
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+Arquivos de Log e Sistema Operacional
+
+*.log
+.DS_Store
+Thumbs.db
