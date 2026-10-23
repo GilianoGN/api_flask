@@ -1,15 +1,10 @@
 import pytest
-from src.app import create_app, db, Role, User
+from src.app import create_app
+from src.models import db, Role, User
 
 @pytest.fixture()
 def app():
-    app = create_app(
-        {
-            "SECRET_KEY": "test",
-            "SQLALCHEMY_DATABASE_URI": "sqlite://",
-            "JWT_SECRET_KEY": "super-secret-jwt-key-that-is-long-enough-32-bytes"
-        }
-    )
+    app = create_app(environment="testing")
     with app.app_context():
         db.create_all()
         yield app

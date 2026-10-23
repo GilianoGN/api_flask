@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from src.app import Role, User, db
+from src.models import db, Role, User
 from sqlalchemy import func
 
 def test_create_user(client, access_token_admin):
