@@ -11,9 +11,18 @@ app = Blueprint("role", __name__, url_prefix="/roles")
 @requires_role("admin")
 def create_role():
     data = request.json
-    role = Role(name=data["name"])
-    db.session.add(role)
-    db.session.commit()
+
+    if not data or not data.get("name"):
+        return {"error": "Dados incompletos para criação da role."}, HTTPStatus.BAD_REQUEST
+
+    try:
+        role = Role(name=data["name"])
+        db.session.add(role)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {"error": "Erro ao salva a role no banco de dados."}, HTTPStatus.INTERNAL_SERVER_ERROR
+    
     return {"message": "Role created!"}, HTTPStatus.CREATED
 
 @app.route("/", methods=["GET"])

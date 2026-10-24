@@ -13,15 +13,23 @@ app = Blueprint("user", __name__, url_prefix="/users")
 @requires_role("admin")
 def create_user():
     data = request.json
-    user = User(
-        username=data["username"],
-        active=data["active"],
-        password=bcrypt.generate_password_hash(data["password"]),
-        role_id=data["role_id"],
-    )
-    db.session.add(user)
-    db.session.commit()
 
+    if not data or not all(data.get(k) for k in ("username", "active", "password", "role_id")):
+        return {"error": "Dados incompletos para criação do usuário."}, HTTPStatus.BAD_REQUEST
+    
+    try:
+        user = User(
+            username=data["username"],
+            active=data["active"],
+            password=bcrypt.generate_password_hash(data["password"]).decore("utf-8"),
+            role_id=data["role_id"],
+        )
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {"error": "Erro ao salva o usuário no banco de dados."}, HTTPStatus.INTERNAL_SERVER_ERROR
+    
     return {"message": "User created!"}, HTTPStatus.CREATED
 
 @app.route("/", methods=["GET"])

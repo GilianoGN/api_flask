@@ -1,6 +1,6 @@
 import pytest
 from src.app import create_app, bcrypt
-from src.models import db, Role, User
+from src.models import db, Role, User, Post
 
 @pytest.fixture()
 def app():
@@ -29,6 +29,11 @@ def populate_db(app):
     user2 = User(username="john-doe", password=hashed_password, active=True, role_id=role1.id)
     user3 = User(username="isaac-fer", password=hashed_password, active=True, role_id=role2.id)
     db.session.add_all([user1, user2, user3])
+    db.session.commit()
+
+    post1 = Post(author_id=user1.id, title="Titulo da postagem 1", body="Corpo do teste de postagem")
+    post2 = Post(author_id=user3.id, title="Titulo da postagem 2", body="Corpo do teste de postagem")
+    db.session.add_all([post1, post2])
     db.session.commit()
 
 @pytest.fixture()

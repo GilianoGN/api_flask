@@ -2,7 +2,7 @@ from http import HTTPStatus
 from src.models import db, Role
 from sqlalchemy import func
 
-def test_create_role(client, access_token_admin):
+def test_create_role_success(client, access_token_admin):
     # Given
     payload = {"name":"gerencia"}
 
@@ -13,6 +13,18 @@ def test_create_role(client, access_token_admin):
     assert response.status_code == HTTPStatus.CREATED
     assert response.json == {"message": "Role created!"}
     assert db.session.execute(db.select(func.count(Role.id))).scalar() == 4
+
+def test_create_role_fail(client, access_token_admin):
+    # Given
+    payload = {"name":""}
+
+    # When
+    response = client.post("/roles/", json=payload, headers={"Authorization": f"Bearer {access_token_admin}"})
+
+    # Then
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"error": "Dados incompletos para criação da role."}
+    assert db.session.execute(db.select(func.count(Role.id))).scalar() == 3
 
 def test_list_roles(client, access_token_normal):
     # Given

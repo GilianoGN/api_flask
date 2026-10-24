@@ -2,7 +2,7 @@ from http import HTTPStatus
 from src.models import db, Role, User
 from sqlalchemy import func
 
-def test_create_user(client, access_token_admin):
+def test_create_user_success(client, access_token_admin):
     # Given
     role_id = db.session.execute(db.select(Role.id).where(Role.name == "admin")).scalar()
     payload = {"username":"giliano", "password":"gil123", "active":True, "role_id":role_id}
@@ -14,6 +14,19 @@ def test_create_user(client, access_token_admin):
     assert response.status_code == HTTPStatus.CREATED
     assert response.json == {"message": "User created!"}
     assert db.session.execute(db.select(func.count(User.id))).scalar() == 4
+
+def test_create_user_fail(client, access_token_admin):
+    # Given
+    role_id = db.session.execute(db.select(Role.id).where(Role.name == "admin")).scalar()
+    payload = {"username":"", "password":"gil123", "active":True, "role_id":role_id}
+
+    # When
+    response = client.post("/users/", json=payload, headers={"Authorization": f"Bearer {access_token_admin}"})
+
+    # Then
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json == {"error": "Dados incompletos para criação do usuário."}
+    assert db.session.execute(db.select(func.count(User.id))).scalar() == 3
 
 def test_list_users(client, access_token_normal):
     # Given

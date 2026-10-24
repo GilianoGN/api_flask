@@ -12,13 +12,21 @@ app = Blueprint("post", __name__, url_prefix="/posts")
 @requires_role("normal")
 def create_post():
     data = request.json
-    post = Post(
-        author_id=data["author_id"],
-        title=data["title"],
-        body=data["body"],
-    )
-    db.session.add(post)
-    db.session.commit()
+
+    if not data or not data.get("author_id") or not all(k in data for k in ("title", "body")):
+        return {"error": "Dados incompletos para criação do post."}, HTTPStatus.BAD_REQUEST
+
+    try:
+        post = Post(
+            author_id=data["author_id"],
+            title=data["title"],
+            body=data["body"],
+        )
+        db.session.add(post)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return {"error": "Erro ao salvar o post no banco de dados."}, HTTPStatus.INTERNAL_SERVER_ERROR
 
     return {"message": "Post created!"}, HTTPStatus.CREATED
 
