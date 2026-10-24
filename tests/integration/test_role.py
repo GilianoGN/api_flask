@@ -61,4 +61,4 @@ def test_delete_role_fail(client, access_token_admin):
     response = client.delete(f"/roles/{role.id}", headers={"Authorization": f"Bearer {access_token_admin}"})
 
     # Then
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.status_code == HTTPStatus.BAD_REQUEST

@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from src.app import bcrypt
 from src.models import db, User
 from src.utils import requires_role
 from http import HTTPStatus
@@ -15,7 +16,7 @@ def create_user():
     user = User(
         username=data["username"],
         active=data["active"],
-        password=data["password"],
+        password=bcrypt.generate_password_hash(data["password"]),
         role_id=data["role_id"],
     )
     db.session.add(user)

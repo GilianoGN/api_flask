@@ -36,6 +36,9 @@ def list_role():
 @requires_role("admin")
 def delete_role(role_id):
     role = db.get_or_404(Role, role_id)
+    if role.user:
+        return {"message": "Cannot delete role with associated users"}, HTTPStatus.BAD_REQUEST
+    
     db.session.delete(role)
     db.session.commit()
     return "", HTTPStatus.NO_CONTENT
