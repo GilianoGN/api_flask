@@ -175,7 +175,7 @@ def delete_post(post_id):
               schema: PostIdParameter
         responses:
             204:
-                description: Seccessful operation
+                description: Successful operation
             404:
                 description: Not found post
         security:

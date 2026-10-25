@@ -43,7 +43,6 @@ swaggerui_blueprint = get_swaggerui_blueprint(
     }
 )
 
-#def create_app(environment=os.environ["ENVIRONMENT"]):
 def create_app(environment=None):
     if environment is None:
         environment = os.environ.get("ENVIRONMENT", "development")
@@ -74,10 +73,6 @@ def create_app(environment=None):
     app.register_blueprint(rolecontroller.app)
     app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
-    @app.route('/docs')
-    def docs():
-        return spec.path(view=usercontroller.delete_user).path(view=usercontroller.get_user).to_dict()
-
     @app.route("/swagger.json")
     def create_swagger_spec():
         from src.controllers import usercontroller, rolecontroller, authcontroller, postcontroller
@@ -90,18 +85,5 @@ def create_app(environment=None):
         for view in all_views:
             spec.path(view=view)
         return spec.to_dict()
-
-#    @app.errorhandler(HTTPExpection)
-#    def handle_exception(e):
-#        response = e.get_response()
-#        response.data = json.dumps(
-#            {
-#                "code": e.code,
-#                "name": e.name,
-#                "description": e.description,
-#            }
-#        )
-#        response.content_type = "application/json"
-#        return response
 
     return app

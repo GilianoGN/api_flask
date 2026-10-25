@@ -51,7 +51,7 @@ def create_role():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return {"error": "Erro ao salva a role no banco de dados."}, HTTPStatus.INTERNAL_SERVER_ERROR
+        return {"error": "Erro ao salvar a role no banco de dados."}, HTTPStatus.INTERNAL_SERVER_ERROR
     
     return {"message": "Role created!"}, HTTPStatus.CREATED
 

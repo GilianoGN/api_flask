@@ -17,10 +17,5 @@ class CreateUserSchema(ma.Schema):
     password = fields.String(required=True)
     role_id = fields.Integer(required=True)
 
-class UserSchemaAll(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = User
-        include_fk = True
-
 class UserIdParameter(ma.Schema):
     user_id = fields.Integer(required=True)

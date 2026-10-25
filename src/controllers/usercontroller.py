@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from src.app import bcrypt
 from src.models import db, User
 from src.utils import requires_role
-from src.views.userview import UserSchema, CreateUserSchema, UserSchemaAll
+from src.views.userview import UserSchema, CreateUserSchema
 from http import HTTPStatus
 from sqlalchemy import inspect # type: ignore
 from flask_jwt_extended import jwt_required # type: ignore
@@ -144,7 +144,7 @@ def update_user(user_id):
                 description: Successful operation
                 content:
                     application/json:
-                        schema: UserSchemaAll
+                        schema: UserSchema
             400:
                 description: User not found
         security:
@@ -159,8 +159,10 @@ def update_user(user_id):
             setattr(user, column.key, data[column.key])
     db.session.commit()
 
-    user_schema = UserSchemaAll()
-    return user_schema.dump(user), HTTPStatus.OK
+    user_schema = UserSchema()
+    result = user_schema.dump(user)
+    result["password"] = user.password
+    return result, HTTPStatus.OK
 
 @app.route("/<int:user_id>", methods=["DELETE"])
 @jwt_required()

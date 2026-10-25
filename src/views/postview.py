@@ -1,5 +1,4 @@
 from src.app import ma
-from src.views.userview import UserIdParameter
 from src.models.postmodel import Post
 from marshmallow import fields # type: ignore
 

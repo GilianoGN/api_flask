@@ -24,7 +24,6 @@ def test_create_post_fail(client, access_token_normal):
 
     # Then
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-#    assert response.json == {"error": "Dados incompletos para criação do post."}
     assert db.session.execute(db.select(func.count(Post.id))).scalar() == 2
 
 def test_list_posts(client, access_token_visitante):
