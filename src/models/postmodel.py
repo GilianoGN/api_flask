@@ -1,6 +1,6 @@
-import sqlalchemy as sa
+import sqlalchemy as sa # type: ignore
 from datetime import datetime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column # type: ignore
 from .basemodel import db
 
 class Post(db.Model):

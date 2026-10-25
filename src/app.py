@@ -80,11 +80,12 @@ def create_app(environment=None):
 
     @app.route("/swagger.json")
     def create_swagger_spec():
-        from src.controllers import usercontroller, rolecontroller, authcontroller
+        from src.controllers import usercontroller, rolecontroller, authcontroller, postcontroller
         all_views = (
             getattr(authcontroller, "AUTH_VIEWS", []) +
             getattr(usercontroller, "USER_VIEWS", []) +
-            getattr(rolecontroller, "ROLE_VIEWS", [])
+            getattr(rolecontroller, "ROLE_VIEWS", []) +
+            getattr(postcontroller, "POST_VIEWS", [])
         )
         for view in all_views:
             spec.path(view=view)

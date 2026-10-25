@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from src.models import db, Role, User
-from sqlalchemy import func
+from sqlalchemy import func # type: ignore
 
 def test_create_user_success(client, access_token_admin):
     # Given
@@ -25,7 +25,7 @@ def test_create_user_fail(client, access_token_admin):
 
     # Then
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"error": "Dados incompletos para criação do usuário."}
+    assert response.json == {"error": "Incomplete data for user creation."}
     assert db.session.execute(db.select(func.count(User.id))).scalar() == 3
 
 def test_list_users(client, access_token_normal):

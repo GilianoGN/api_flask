@@ -114,13 +114,15 @@ def get_user(user_id):
                 description: Successful operation
                 content:
                     application/json:
-                        schema: UserSchemaAll
+                        schema: UserSchema
         security:
             - BearerAuth: []
     """
     user = db.get_or_404(User, user_id)
-    user_schema = UserSchemaAll()
-    return user_schema.dump(user), HTTPStatus.OK
+    user_schema = UserSchema()
+    result = user_schema.dump(user)
+    result["password"] = user.password
+    return result, HTTPStatus.OK
 
 @app.route("/<int:user_id>", methods=["PATCH"])
 @jwt_required()

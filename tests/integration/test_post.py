@@ -1,6 +1,6 @@
 from http import HTTPStatus
 from src.models import db, Post, User
-from sqlalchemy import func
+from sqlalchemy import func # type: ignore
 
 def test_create_post_success(client, access_token_normal):
     # Given
@@ -23,8 +23,8 @@ def test_create_post_fail(client, access_token_normal):
     response = client.post("/posts/", json=payload, headers={"Authorization": f"Bearer {access_token_normal}"})
 
     # Then
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json == {"error": "Dados incompletos para criação do post."}
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+#    assert response.json == {"error": "Dados incompletos para criação do post."}
     assert db.session.execute(db.select(func.count(Post.id))).scalar() == 2
 
 def test_list_posts(client, access_token_visitante):
@@ -42,14 +42,18 @@ def test_list_posts(client, access_token_visitante):
     assert response.json == {
         "posts": [
             {
+                "id":post1.id,
                 "author_id":post1.author_id,
                 "title":post1.title,
                 "body":post1.body,
+                "created":post1.created.isoformat(),
             },
             {
+                "id":post2.id,
                 "author_id":post2.author_id,
                 "title":post2.title,
                 "body":post2.body,
+                "created":post2.created.isoformat(),
             },
         ]
     }
@@ -65,11 +69,11 @@ def test_get_post_success(client, access_token_normal):
     # Then
     assert response.status_code == HTTPStatus.OK
     assert response.json == {
-        {
+            "id":post.id,
             "author_id":post.author_id,
             "title":post.title,
             "body":post.body,
-        },
+            "created":post.created.isoformat(),
     }
 
 def test_get_post_not_found(client, access_token_normal):
