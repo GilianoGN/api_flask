@@ -1,5 +1,5 @@
 from src.app import ma
-from src.views.roleview import RoleSchema
+from src.views.roleview import RoleSchemaAll
 from src.models.usermodel import User
 from marshmallow import fields # type: ignore
 
@@ -9,7 +9,7 @@ class UserSchema(ma.SQLAlchemySchema):
     id = ma.auto_field()
     username = ma.auto_field()
     active = ma.auto_field()
-    role = ma.Nested(RoleSchema)
+    role = ma.Nested(RoleSchemaAll)
 
 class CreateUserSchema(ma.Schema):
     username = fields.String(required=True)

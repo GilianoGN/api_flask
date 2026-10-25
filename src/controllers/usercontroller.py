@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from src.app import bcrypt
 from src.models import db, User
 from src.utils import requires_role
-from src.views.userview import UserSchema, CreateUserSchema
+from src.views.userview import UserSchema, CreateUserSchema, UserSchemaAll
 from http import HTTPStatus
 from sqlalchemy import inspect # type: ignore
 from flask_jwt_extended import jwt_required # type: ignore
@@ -119,16 +119,8 @@ def get_user(user_id):
             - BearerAuth: []
     """
     user = db.get_or_404(User, user_id)
-    return {
-        "id": user.id,
-        "username": user.username,
-        "active":user.active,
-        "role":{
-            "id": user.role.id,
-            "name": user.role.name,
-        },
-        "password":user.password,
-    }
+    user_schema = UserSchemaAll()
+    return user_schema.dump(user), HTTPStatus.OK
 
 @app.route("/<int:user_id>", methods=["PATCH"])
 @jwt_required()
@@ -145,12 +137,12 @@ def update_user(user_id):
             - in: path
               name: user_id
               schema: UserIdParameter
-        response:
+        responses:
             200:
                 description: Successful operation
                 content:
                     application/json:
-                        schema: UserSchema
+                        schema: UserSchemaAll
             400:
                 description: User not found
         security:
@@ -165,12 +157,8 @@ def update_user(user_id):
             setattr(user, column.key, data[column.key])
     db.session.commit()
 
-    return {
-        "id": user.id,
-        "username": user.username,
-        "active":user.active,
-        "password":user.password,
-    }
+    user_schema = UserSchemaAll()
+    return user_schema.dump(user), HTTPStatus.OK
 
 @app.route("/<int:user_id>", methods=["DELETE"])
 @jwt_required()

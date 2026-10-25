@@ -2,6 +2,13 @@ from src.app import ma
 from src.models.rolemodel import Role
 from marshmallow import fields # type: ignore
 
-class RoleSchema(ma.Schema):
+class RoleSchemaAll(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ("id", "name")
+        model = Role
+        include_fk = True
+
+class CreateRoleSchema(ma.Schema):
+    name = fields.String(required=True)
+
+class RoleIdParameter(ma.Schema):
+    role_id = fields.Integer(required=True)

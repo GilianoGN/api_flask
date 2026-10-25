@@ -1,15 +1,15 @@
 import os
 
-from apispec import APISpec
-from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec_webframeworks.flask import FlaskPlugin
+from apispec import APISpec # type: ignore
+from apispec.ext.marshmallow import MarshmallowPlugin # type: ignore
+from apispec_webframeworks.flask import FlaskPlugin # type: ignore
 
 from flask import Flask, json
-from flask_bcrypt import Bcrypt
-from flask_marshmallow import Marshmallow
-from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager
-from flask_swagger_ui import get_swaggerui_blueprint
+from flask_bcrypt import Bcrypt # type: ignore
+from flask_marshmallow import Marshmallow # type: ignore
+from flask_migrate import Migrate # type: ignore
+from flask_jwt_extended import JWTManager # type: ignore
+from flask_swagger_ui import get_swaggerui_blueprint # type: ignore
 from src.models import db
 
 ma = Marshmallow()
@@ -23,6 +23,15 @@ spec = APISpec(
     info=dict(description="DIO Bank API"),
     plugins=[FlaskPlugin(), MarshmallowPlugin()],
 )
+spec.components.security_scheme(
+    "BearerAuth",
+    {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+    },
+)
+
 SWAGGER_URL = '/docs'
 API_URL = '/swagger.json'
 
@@ -71,9 +80,11 @@ def create_app(environment=None):
 
     @app.route("/swagger.json")
     def create_swagger_spec():
-        from src.controllers import usercontroller
+        from src.controllers import usercontroller, rolecontroller, authcontroller
         all_views = (
-            getattr(usercontroller, "USER_VIEWS", [])
+            getattr(authcontroller, "AUTH_VIEWS", []) +
+            getattr(usercontroller, "USER_VIEWS", []) +
+            getattr(rolecontroller, "ROLE_VIEWS", [])
         )
         for view in all_views:
             spec.path(view=view)
