@@ -15,6 +15,9 @@ dependencies = [
     "psycopg2-binary",
     "gunicorn",
     "flask-bcrypt",
+    "flask-marshmallow",
+    "marshmallow-sqlalchemy",
+    "apispec-webframeworks",
 ]
 
 [dependency-groups]

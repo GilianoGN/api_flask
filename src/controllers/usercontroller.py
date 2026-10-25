@@ -2,9 +2,11 @@ from flask import Blueprint, request
 from src.app import bcrypt
 from src.models import db, User
 from src.utils import requires_role
+from src.views.userview import UserSchema, CreateUserSchema
 from http import HTTPStatus
 from sqlalchemy import inspect
 from flask_jwt_extended import jwt_required
+from marshmallow import ValidationError
 
 app = Blueprint("user", __name__, url_prefix="/users")
 
@@ -12,23 +14,29 @@ app = Blueprint("user", __name__, url_prefix="/users")
 @jwt_required()
 @requires_role("admin")
 def create_user():
-    data = request.json
+#    data = request.json
+    user_schema = CreateUserSchema()
+
+    try:
+        data = user_schema.load(request.json)
+    except ValidationError as exc:
+        return exc.messages, HTTPStatus.UNPROCESSABLE_ENTITY
 
     if not data or not all(data.get(k) for k in ("username", "active", "password", "role_id")):
-        return {"error": "Dados incompletos para criação do usuário."}, HTTPStatus.BAD_REQUEST
-    
+        return {"error": "Incomplete data for user creation."}, HTTPStatus.BAD_REQUEST
+
     try:
         user = User(
             username=data["username"],
             active=data["active"],
-            password=bcrypt.generate_password_hash(data["password"]).decore("utf-8"),
+            password=bcrypt.generate_password_hash(data["password"]).decode("utf-8"),
             role_id=data["role_id"],
         )
         db.session.add(user)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return {"error": "Erro ao salva o usuário no banco de dados."}, HTTPStatus.INTERNAL_SERVER_ERROR
+        return {"error": "Error saving the user to the database."}, HTTPStatus.INTERNAL_SERVER_ERROR
     
     return {"message": "User created!"}, HTTPStatus.CREATED
 
@@ -38,18 +46,20 @@ def create_user():
 def list_user():
     query = db.select(User)
     users = db.session.execute(query).scalars()
-    list = [
-        {
-            "id": user.id,
-            "username":user.username,
-            "active":user.active,
-            "role":{
-                "id": user.role.id,
-                "name": user.role.name,
-            },
-        }
-        for user in users
-    ]
+    users_schema = UserSchema(many=True)
+    list = users_schema.dump(users)
+#    list = [
+#        {
+#            "id": user.id,
+#            "username":user.username,
+#            "active":user.active,
+#            "role":{
+#                "id": user.role.id,
+#                "name": user.role.name,
+#            },
+#        }
+#        for user in users
+#    ]
 
     return {"users": list}, HTTPStatus.OK
 
@@ -57,6 +67,24 @@ def list_user():
 @jwt_required()
 @requires_role("admin")
 def get_user(user_id):
+    """User detail view.
+    ---
+    get:
+        tags:
+            - user
+        summary: Get a user
+        description: get a user
+        parameters:
+            - in: path
+              name: user_id
+              schema: UserIdParameter
+        responses:
+            200:
+                description: Successful operation
+                content:
+                    application/json:
+                        schema: UserSchema
+    """
     user = db.get_or_404(User, user_id)
     return {
         "id": user.id,
@@ -93,6 +121,23 @@ def update_user(user_id):
 @jwt_required()
 @requires_role("admin")
 def delete_user(user_id):
+    """User delete view.
+    ---
+    delete:
+        tags:
+            - user
+        summary: Deletes a user
+        description: delete a user
+        parameters:
+            - in: path
+              name: user_id
+              schema: UserIdParameter
+        responses:
+            204:
+                description: Successful operation
+            404:
+                description: Not found user
+    """
     user = db.get_or_404(User, user_id)
     db.session.delete(user)
     db.session.commit()

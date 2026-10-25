@@ -1,14 +1,27 @@
 import os
 
-from flask import Flask
+from apispec import APISpec
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec_webframeworks.flask import FlaskPlugin
+
+from flask import Flask, json
 from flask_bcrypt import Bcrypt
+from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from src.models import db
 
+ma = Marshmallow()
 migrate = Migrate()
 jwt = JWTManager()
 bcrypt = Bcrypt()
+spec = APISpec(
+    title="DIO Bank",
+    version="1.0.0",
+    openapi_version="3.0.3",
+    info=dict(description="DIO Bank API"),
+    plugins=[FlaskPlugin(), MarshmallowPlugin()],
+)
 
 #def create_app(environment=os.environ["ENVIRONMENT"]):
 def create_app(environment=None):
@@ -28,6 +41,7 @@ def create_app(environment=None):
     #initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
+    ma.init_app(app)
     jwt.init_app(app)
     bcrypt.init_app(app)
 
@@ -38,5 +52,22 @@ def create_app(environment=None):
     app.register_blueprint(postcontroller.app)
     app.register_blueprint(authcontroller.app)
     app.register_blueprint(rolecontroller.app)
+
+    @app.route('/docs')
+    def docs():
+        return spec.path(view=usercontroller.delete_user).path(view=usercontroller.get_user).to_dict()
+
+#    @app.errorhandler(HTTPExpection)
+#    def handle_exception(e):
+#        response = e.get_response()
+#        response.data = json.dumps(
+#            {
+#                "code": e.code,
+#                "name": e.name,
+#                "description": e.description,
+#            }
+#        )
+#        response.content_type = "application/json"
+#        return response
 
     return app
