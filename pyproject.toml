@@ -18,6 +18,7 @@ dependencies = [
     "flask-marshmallow",
     "marshmallow-sqlalchemy",
     "apispec-webframeworks",
+    "flask-swagger-ui",
 ]
 
 [dependency-groups]

@@ -4,9 +4,9 @@ from src.models import db, User
 from src.utils import requires_role
 from src.views.userview import UserSchema, CreateUserSchema
 from http import HTTPStatus
-from sqlalchemy import inspect
-from flask_jwt_extended import jwt_required
-from marshmallow import ValidationError
+from sqlalchemy import inspect # type: ignore
+from flask_jwt_extended import jwt_required # type: ignore
+from marshmallow import ValidationError # type: ignore
 
 app = Blueprint("user", __name__, url_prefix="/users")
 
@@ -14,7 +14,28 @@ app = Blueprint("user", __name__, url_prefix="/users")
 @jwt_required()
 @requires_role("admin")
 def create_user():
-#    data = request.json
+    """Create a user.
+    ---
+    post:
+        tags:
+            - user
+        summary: Create a new user (Apenas Administradores)
+        description: Creates a new user with username, password, active status, and role_id
+        requestBody:
+            required: true
+            content:
+                application/json:
+                    schema: CreateUserSchema
+        responses:
+            201:
+                description: User created successfully
+            400:
+                description: Incomplete data for user creation
+            422:
+                description: Validation error
+        security:
+            - BearerAuth: []
+    """
     user_schema = CreateUserSchema()
 
     try:
@@ -44,22 +65,32 @@ def create_user():
 @jwt_required()
 @requires_role("visitante")
 def list_user():
+    """List user view.
+    ---
+    get:
+        tags:
+            - user
+        summary: List all users
+        description: Retrieves a list of all registered users
+        responses:
+            200:
+                description: Successful operation
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                user:
+                                    type: array
+                                    items:
+                                        Schema: UserSchema
+        security:
+            - BearerAuth: []
+    """
     query = db.select(User)
     users = db.session.execute(query).scalars()
     users_schema = UserSchema(many=True)
     list = users_schema.dump(users)
-#    list = [
-#        {
-#            "id": user.id,
-#            "username":user.username,
-#            "active":user.active,
-#            "role":{
-#                "id": user.role.id,
-#                "name": user.role.name,
-#            },
-#        }
-#        for user in users
-#    ]
 
     return {"users": list}, HTTPStatus.OK
 
@@ -72,7 +103,7 @@ def get_user(user_id):
     get:
         tags:
             - user
-        summary: Get a user
+        summary: Get a user (Apenas Administradores)
         description: get a user
         parameters:
             - in: path
@@ -83,7 +114,9 @@ def get_user(user_id):
                 description: Successful operation
                 content:
                     application/json:
-                        schema: UserSchema
+                        schema: UserSchemaAll
+        security:
+            - BearerAuth: []
     """
     user = db.get_or_404(User, user_id)
     return {
@@ -101,6 +134,28 @@ def get_user(user_id):
 @jwt_required()
 @requires_role("admin")
 def update_user(user_id):
+    """Update a user.
+    ---
+    patch:
+        tags:
+            - user
+        summary: Update a user partially (Apenas Administradores)
+        description: Updates specific fields of an existing user by ID
+        parameters:
+            - in: path
+              name: user_id
+              schema: UserIdParameter
+        response:
+            200:
+                description: Successful operation
+                content:
+                    application/json:
+                        schema: UserSchema
+            400:
+                description: User not found
+        security:
+            - BearerAuth: []
+    """
     user = db.get_or_404(User, user_id)
     data = request.json
 
@@ -126,7 +181,7 @@ def delete_user(user_id):
     delete:
         tags:
             - user
-        summary: Deletes a user
+        summary: Deletes a user (Apenas Administradores)
         description: delete a user
         parameters:
             - in: path
@@ -137,8 +192,19 @@ def delete_user(user_id):
                 description: Successful operation
             404:
                 description: Not found user
+        security:
+            - BearerAuth: []
     """
     user = db.get_or_404(User, user_id)
     db.session.delete(user)
     db.session.commit()
     return "", HTTPStatus.NO_CONTENT
+
+# Lista de view do User para o APISpec
+USER_VIEWS = [
+    create_user,
+    list_user,
+    get_user,
+    update_user,
+    delete_user
+]

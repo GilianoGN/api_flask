@@ -1,11 +1,10 @@
 from src.app import ma
 from src.views.roleview import RoleSchema
 from src.models.usermodel import User
-from marshmallow import fields
+from marshmallow import fields # type: ignore
 
 class UserSchema(ma.SQLAlchemySchema):
     class Meta:
-#        fields = ("id", "username", "active", "role")
         model = User
     id = ma.auto_field()
     username = ma.auto_field()
